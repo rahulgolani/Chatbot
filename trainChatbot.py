@@ -1,18 +1,22 @@
-#import tensorflow
+#------------------------Import and Load data file-----------------------------------------
 
+#import tensorflow  #Required For Keras, as it uses tensorflow backend
+#Ignoring warnings for Tensorlow alpha version (For Py3.7)
 import sys
 import warnings
 if not sys.warnoptions:
     warnings.simplefilter("ignore")
-
+#Natural Language toolkit
 import nltk
 from nltk.stem import WordNetLemmatizer  #Lemmatizer
+from nltk.tokenize import word_tokenize #Tokenizer
 
 lemmatizer=WordNetLemmatizer()
 
-import json
-import pickle #To Serialize/Deserialize
+import json #for serializing/Deserializing Python Objects
+import pickle #To store serialzed object in Pickle file
 import numpy as np
+#Keras for building model for training the chatbot
 from keras.models import Sequential  #Sequential Model Used
 from keras.layers import Dense, Activation, Dropout
 from keras.optimizers import SGD
@@ -22,101 +26,62 @@ import random
 words=[]
 classes=[]
 documents=[]
-ignoreWords=['!','?']
-fileName=open('intents.json','r')
-print('This is working fine till now')
-#dataFile=fileName.read()
+ignoreWords=['!','?',',',"'",'.','-']
 try:
-    intents=json.loads(fileName)
-except ValueError as e:
-    print(e)
+    with open("intents.json","r") as dataFile:
+        intents=json.load(dataFile)
+except ValueError:
+    print('Decoding JSON Failed!!!')
+#print(type(intents)) #JSON to dict
 
-print("Hello this is working fine")
+#------------------Preprocess data------------------------------------------------------
 
-#print(intents)
-#print(type())
-'''
-import json
+for intent in intents['intents']:
+    for pattern in intent['patterns']:
+        w=word_tokenize(pattern)#tokenize each word
+        words.extend(w)#storing each word in pattern
+        documents.append((w,intent['tag'])) #add category corresponding to each patterns
+        #adding all the categories in classes
+        if intent['tag'] not in classes:
+            classes.append(intent['tag'])
+#print(words)
+#print(documents)
+#print(classes)
 
-#dataFile=open('intents.json','r')
-with open("intents.json","r") as readFile:
-    data=json.load(readFile)
-print(type(data))
-'''
-'''
-intent={
-  "intents": [
-        {"tag": "greeting",
-         "patterns": ["Hi there", "How are you", "Is anyone there?","Hey","Hola", "Hello", "Good day"],
-         "responses": ["Hello, thanks for asking", "Good to see you again", "Hi there, how can I help?"],
-         "context": [""]
-        },
-        {"tag": "goodbye",
-         "patterns": ["Bye", "See you later", "Goodbye", "Nice chatting to you, bye", "Till next time"],
-         "responses": ["See you!", "Have a nice day", "Bye! Come back again soon."],
-         "context": [""]
-        },
-        {"tag": "thanks",
-         "patterns": ["Thanks", "Thank you", "That's helpful", "Awesome, thanks", "Thanks for helping me"],
-         "responses": ["Happy to help!", "Any time!", "My pleasure"],
-         "context": [""]
-        },
-        {"tag": "noanswer",
-         "patterns": [],
-         "responses": ["Sorry, can't understand you", "Please give me more info", "Not sure I understand"],
-         "context": [""]
-        },
-        {"tag": "options",
-         "patterns": ["How you could help me?", "What you can do?", "What help you provide?", "How you can be helpful?", "What support is offered"],
-         "responses": ["I can guide you through Adverse drug reaction list, Blood pressure tracking, Hospitals and Pharmacies", "Offering support for Adverse drug reaction, Blood pressure, Hospitals and Pharmacies"],
-         "context": [""]
-        },
-        {"tag": "adverse_drug",
-         "patterns": ["How to check Adverse drug reaction?", "Open adverse drugs module", "Give me a list of drugs causing adverse behavior", "List all drugs suitable for patient with adverse reaction", "Which drugs dont have adverse reaction?" ],
-         "responses": ["Navigating to Adverse drug reaction module"],
-         "context": [""]
-        },
-        {"tag": "blood_pressure",
-         "patterns": ["Open blood pressure module", "Task related to blood pressure", "Blood pressure data entry", "I want to log blood pressure results", "Blood pressure data management" ],
-         "responses": ["Navigating to Blood Pressure module"],
-         "context": [""]
-        },
-        {"tag": "blood_pressure_search",
-         "patterns": ["I want to search for blood pressure result history", "Blood pressure for patient", "Load patient blood pressure result", "Show blood pressure results for patient", "Find blood pressure results by ID" ],
-         "responses": ["Please provide Patient ID", "Patient ID?"],
-         "context": ["search_blood_pressure_by_patient_id"]
-        },
-        {"tag": "search_blood_pressure_by_patient_id",
-         "patterns": [],
-         "responses": ["Loading Blood pressure result for Patient"],
-         "context": [""]
-        },
-        {"tag": "pharmacy_search",
-         "patterns": ["Find me a pharmacy", "Find pharmacy", "List of pharmacies nearby", "Locate pharmacy", "Search pharmacy" ],
-         "responses": ["Please provide pharmacy name"],
-         "context": ["search_pharmacy_by_name"]
-        },
-        {"tag": "search_pharmacy_by_name",
-         "patterns": [],
-         "responses": ["Loading pharmacy details"],
-         "context": [""]
-        },
-        {"tag": "hospital_search",
-         "patterns": ["Lookup for hospital", "Searching for hospital to transfer patient", "I want to search hospital data", "Hospital lookup for patient", "Looking up hospital details" ],
-         "responses": ["Please provide hospital name or location"],
-         "context": ["search_hospital_by_params"]
-        },
-        {"tag": "search_hospital_by_params",
-         "patterns": [],
-         "responses": ["Please provide hospital type"],
-         "context": ["search_hospital_by_type"]
-        },
-        {"tag": "search_hospital_by_type",
-         "patterns": [],
-         "responses": ["Loading hospital details"],
-         "context": [""]
-        }
-   ]
-}
-'''
-#print(type(intent))
+#-----------lemmatizing, lowering each word and removing duplicates---------------------------
+#print(words)
+#print()
+words=[(lemmatizer.lemmatize(word.lower())) for word in words if word not in ignoreWords]
+#print(words)
+words=sorted(list(set(words)))
+classes=sorted(list(set(classes)))
+pickle.dump(words,open('words.pkl','wb'))
+pickle.dump(classes,open('classes.pkl','wb'))
+
+#-------------training and testing data----------------------------------------------------
+
+#input will be the pattern and output is the class to which the input pattern belongs to
+#print(documents)
+training=[]
+output=[0]*len(classes)
+for doc in documents:
+    bag=[]
+    patternWords=doc[0]
+    #print(patternWords)
+    patternWords=[lemmatizer.lemmatize(word.lower()) for word in patternWords]
+    for w in words:
+        if w in patternWords:
+            bag.append(1)
+        else:
+            bag.append(0)
+    outputRow=list(output)
+    outputRow[classes.index(doc[1])]=1
+    training.append([bag,outputRow])
+random.shuffle(training)
+training=np.array(training)
+#print(training)
+train_x=list(training[:,0])
+train_y=list(training[:,1])
+print(train_y)
+print(len(train_y))
+print("Training Data Created")
