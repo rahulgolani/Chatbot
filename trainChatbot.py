@@ -42,8 +42,9 @@ for intent in intents['intents']:
         words.extend(w)#storing each word in pattern
         documents.append((w,intent['tag'])) #add category corresponding to each patterns
         #adding all the categories in classes
-        if intent['tag'] not in classes:
-            classes.append(intent['tag'])
+    if intent['tag'] not in classes:#(in loop or not)
+        #print(intent['tag'])
+        classes.append(intent['tag'])
 #print(words)
 #print(documents)
 #print(classes)
@@ -53,8 +54,11 @@ for intent in intents['intents']:
 #print()
 words=[(lemmatizer.lemmatize(word.lower())) for word in words if word not in ignoreWords]
 #print(words)
+#print(len(words))#185
 words=sorted(list(set(words)))
+#print(len(words))#87
 classes=sorted(list(set(classes)))
+#print(classes)
 pickle.dump(words,open('words.pkl','wb'))
 pickle.dump(classes,open('classes.pkl','wb'))
 
@@ -64,24 +68,35 @@ pickle.dump(classes,open('classes.pkl','wb'))
 #print(documents)
 training=[]
 output=[0]*len(classes)
+#print(output)
+#print(documents)
+#print(words)
+#print(classes)
 for doc in documents:
     bag=[]
     patternWords=doc[0]
     #print(patternWords)
     patternWords=[lemmatizer.lemmatize(word.lower()) for word in patternWords]
+
     for w in words:
         if w in patternWords:
             bag.append(1)
         else:
             bag.append(0)
+    #print(len(bag))
     outputRow=list(output)
     outputRow[classes.index(doc[1])]=1
     training.append([bag,outputRow])
+    #print(training)
+    #print()
+    #print()
 random.shuffle(training)
 training=np.array(training)
 #print(training)
 train_x=list(training[:,0])
 train_y=list(training[:,1])
-print(train_y)
-print(len(train_y))
+#print(train_x)
+#print(len(train_y))
 print("Training Data Created")
+
+#-----------------------------Model Building---------------------------------------------
