@@ -42,12 +42,12 @@ for intent in intents['intents']:
         words.extend(w)#storing each word in pattern
         documents.append((w,intent['tag'])) #add category corresponding to each patterns
         #adding all the categories in classes
-    if intent['tag'] not in classes:#(in loop or not)
-        #print(intent['tag'])
-        classes.append(intent['tag'])
+        if intent['tag'] not in classes:#(in loop or not)
+            #print(intent['tag'])
+            classes.append(intent['tag'])
 #print(words)
 #print(documents)
-#print(classes)
+print(classes)
 
 #-----------lemmatizing, lowering each word and removing duplicates---------------------------
 #print(words)
@@ -95,8 +95,18 @@ training=np.array(training)
 #print(training)
 train_x=list(training[:,0])
 train_y=list(training[:,1])
-#print(train_x)
+print(train_y)
 #print(len(train_y))
 print("Training Data Created")
 
 #-----------------------------Model Building---------------------------------------------
+
+
+model=Sequential()#linear stack of layers
+model.add(Dense(128,input_shape=(len(train_x[0]),),activation="relu"))#either add directly in constructor
+#dense layer req-num of layers, model needs to know what input shape the data is in, it accepts the tuple integration
+#model.add(Dropout(0.5))
+model.add(Dense(64,activation="relu"))
+#model.add(Dropout(0.5))
+model.add(Dense(len(train_y[0]),activation="softmax"))
+print(model.summary())
