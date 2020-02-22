@@ -18,7 +18,7 @@ import pickle #To store serialzed object in Pickle file
 import numpy as np
 #Keras for building model for training the chatbot
 from keras.models import Sequential  #Sequential Model Used
-from keras.layers import Dense, Activation, Dropout
+from keras.layers import Dense, Activation, Dropout#( use of dropout???)
 from keras.optimizers import SGD
 
 import random
@@ -95,7 +95,6 @@ training=np.array(training)
 #print(training)
 train_x=list(training[:,0])
 train_y=list(training[:,1])
-print(train_y)
 #print(len(train_y))
 print("Training Data Created")
 
@@ -109,4 +108,11 @@ model.add(Dense(128,input_shape=(len(train_x[0]),),activation="relu"))#either ad
 model.add(Dense(64,activation="relu"))
 #model.add(Dropout(0.5))
 model.add(Dense(len(train_y[0]),activation="softmax"))
-print(model.summary())
+model.summary()
+sgd=SGD(lr=0.01,decay=1e-6,momentum=0.9,nesterov=True)
+model.compile(loss='categorical_crossentropy',optimizer=sgd,metrics=['accuracy'])
+
+#createdModel=model.fit(np.array(train_x),np.array(train_y),batch_size=10,epochs=20,shuffle=True,verbose=2)
+createdModel=model.fit(np.array(train_x),np.array(train_y),validation_split=0.2,batch_size=10,epochs=200,shuffle=True,verbose=2)
+model.save('chatbot_model.h5',createdModel)
+print("Model Created!!")
