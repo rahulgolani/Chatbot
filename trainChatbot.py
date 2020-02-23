@@ -1,7 +1,7 @@
 #------------------------Import and Load data file-----------------------------------------
 
 #import tensorflow  #Required For Keras, as it uses tensorflow backend
-#Ignoring warnings for Tensorlow alpha version (For Py3.7)
+#Ignoring warnings for Tensorflow alpha version (For Py3.7)
 import sys
 import warnings
 if not sys.warnoptions:

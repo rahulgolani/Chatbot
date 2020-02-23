@@ -2,7 +2,7 @@
 
 #Model only tells what class the user input belongs to
 
-#Ignoring warnings for Tensorlow alpha version (For Py3.7)
+#Ignoring warnings for Tensorflow alpha version (For Py3.7)
 import sys
 import warnings
 if not sys.warnoptions:
