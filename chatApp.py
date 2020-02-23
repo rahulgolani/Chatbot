@@ -48,6 +48,8 @@ def bow(sentence,words,showDetails=True):
         for i,w in enumerate(words):
             if w==s:
                 bag[i]=1
+                if showDetails:
+                    print("found in bag",w)
 
     '''
     for w in words:
