@@ -92,6 +92,50 @@ def getResponse(resultClass, intents):
             break
     return result
 
+#---------------------------------------GUI--------------------------------------------------------
+import tkinter
+from tkinter import *
+
+root=Tk()
+root.title("Chatbot")
+WINDOW_WIDTH=400
+WINDOW_HEIGHT=500
+root.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
+root.resizable(width=False,height=False)
+root.configure(background="grey")
+root.wm_iconbitmap("chatbot-07-512.ico")
+
+def send():
+    msg=EntryBox.get("1.0","end-1c").strip()
+    EntryBox.delete("0.0",END)
+    if msg != '':
+        chatBox.config(state=NORMAL)
+        chatBox.tag_config("placeright",justify=RIGHT)
+        chatBox.tag_config("purple",foreground="#9c369a")
+        chatBox.insert(END, "You: " + msg + '\n\n',("placeright","purple"))
+        chatBox.config(foreground="#442265", font=("comicsans", 12 ))
+        res = chatbot_response(msg)
+        chatBox.insert(END, "Bot: " + res + '\n\n',("purple"))
+        chatBox.config(state=DISABLED)
+        chatBox.yview(END)
+
+chatBox=Text(root,height="8",fg='#e835d9',width="50",font="comicsansms",pady=5)
+
+chatBox.config(state=DISABLED)
+
+scrollBar=Scrollbar(root,command=chatBox.yview)
+chatBox['yscrollcommand']=scrollBar.set
+
+sendButton=Button(root,font=("Comicsansms",15,"bold"),text="Send",width="2",height="5", bd=0, bg="#52ba86",fg='#ffffff',borderwidth="4",relief=SUNKEN,command= send)
+
+EntryBox = Text(root, bd=0, bg="white",width="29", height="5", font="Arial",borderwidth="4",relief=SUNKEN,padx=10)
+
+scrollBar.place(x=376,y=6,height=386)
+chatBox.place(x=6,y=6,height=386,width=370)
+EntryBox.place(x=6, y=401, height=90)
+sendButton.place(x=210, y=401, height=90, width=265)
+root.mainloop()
+
 #FOR TESTING ONLY
 '''
 if __name__ == '__main__':
